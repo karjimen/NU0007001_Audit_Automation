@@ -17,7 +17,6 @@ def calculator_hash(cadena):
 class AutomationExtract:
     def __init__(self, data_source_automation_metrics: AutomationMetrics):
         self.data_source_automation_metrics = data_source_automation_metrics
-        #self.date = datetime.now() - timedelta(days=int(Constants.days_to_extract))
         self.executions_count = 0
 
     def query_elasticsearch(self):

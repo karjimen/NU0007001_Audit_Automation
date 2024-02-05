@@ -2,15 +2,17 @@ import datetime
 import requests
 import json
 
-from domain.utils import constants
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 
 class ElasticSearchIntegration:
 
-    def __init__(self, url_endpoint, user, password):
-        self.url_endpoint = url_endpoint
-        self.user = user
-        self.password = password
+    def __init__(self, url_endpoint, password, user):
+        self.__url_endpoint = url_endpoint
+        self.__password = password
+        self.__user = user
 
     def set_max_result_window(self, limit_index):
         payload = {
@@ -25,15 +27,11 @@ class ElasticSearchIntegration:
         data = json.dumps(payload)
         session = requests.Session()
         session.trust_env = False
-        response = session.request("PUT", self.url_endpoint, headers=headers, data=data)
+        response = session.request("PUT", self.__url_endpoint, headers=headers, data=data)
         return response.status_code
 
 
-    def get_info_index(self, limit_index, sources):
-        payload = {
-            "_source": sources,
-            "size": limit_index
-        }
+    def update_index_by_query(self, payload):
 
         headers = {
             'cache-control': 'no-cache',
@@ -41,22 +39,25 @@ class ElasticSearchIntegration:
         }
 
         data = json.dumps(payload)
-        session = requests.Session()
-        session.trust_env = False
-        response = session.request("GET", self.url_endpoint, headers=headers, data=data, verify=False)
-        return response.json()
+        try:
+            session = requests.Session()
+            session.trust_env = False
+            response = session.post(
+                url=self.__url_endpoint,
+                data=data,
+                verify=False,
+                headers=headers,
+                timeout=20.0
+            )
 
-    def get_info_index_with_payload(self, payload_input):
-        payload = payload_input
+            return response
 
-        headers = {
-            'cache-control': 'no-cache',
-            'Content-Type': 'application/json'
-        }
-
-        data = json.dumps(payload)
-        session = requests.Session()
-        session.trust_env = False
-        response = session.request("GET", self.url_endpoint, headers=headers, data=data, verify=False)
-        return response.json()
-
+        except requests.exceptions.Timeout as e:
+            print(f"Timeout Error update index: payload={payload}: {e} ")
+            raise SystemExit(e)
+        except requests.exceptions.TooManyRedirects as e:
+            print(f"TooManyRedirects Error update index: payload={payload}: {e}")
+            raise SystemExit(e)
+        except requests.exceptions.RequestException as e:
+            print(f"RequestException Error update index: payload={payload}: {e}")
+            raise SystemExit(e)

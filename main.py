@@ -1,10 +1,10 @@
-from domain.models.concrete_automation_metrics import ConcreteAutomationMetrics
 from domain.usecases.automation_extract import AutomationExtract
+from infraestructure.driven_adapters.automation_metrics_implementation import ElasticSearchAutomationMetrics
 from infraestructure.driven_adapters.gestor_elastic_search import ElasticSearchIntegration
 
 
 def main():
-    automation_metrics = ConcreteAutomationMetrics()
+    automation_metrics = AutomationExtract(ElasticSearchAutomationMetrics())
     automation_extract = AutomationExtract(automation_metrics)
 
     elastic_search = ElasticSearchIntegration(
