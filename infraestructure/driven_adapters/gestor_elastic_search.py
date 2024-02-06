@@ -31,7 +31,7 @@ class ElasticSearchIntegration:
         return response.status_code
 
 
-    def update_index_by_query(self, payload):
+    def get_data_by_query(self, payload):
 
         headers = {
             'cache-control': 'no-cache',
