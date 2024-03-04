@@ -6,7 +6,6 @@ from infraestructure.driven_adapters.gestor_elastic_search import ElasticSearchI
 
 class ElasticSearchAutomationMetrics(AutomationMetrics):
 
-
     def __init__(self, url_get_data, user, password):
         self.url_get_data = url_get_data
         self.user = user

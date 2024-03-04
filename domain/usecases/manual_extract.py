@@ -8,7 +8,7 @@ from infraestructure.driven_adapters.automation_metrics_implementation import El
 
 def check_and_color_column(index, column, value, condition, columns_to_color):
     if value == condition:
-        columns_to_color.extend([(index + 1, column, 'S', 'A')])
+        columns_to_color.extend([(index + 1, column, 'A', 'L', 'M')])
 
 
 def set_column_width(sheet, columns, width):
@@ -23,7 +23,7 @@ def extract_data(url_and_paths):
             "query": {
                 "bool": {
                     "must": [
-                        {"term": {"Sprint.keyword": "Sprint 185"}}
+                        {"term": {"Sprint.keyword": "Sprint 184"}}
                     ],
                     "should": [
                         {"term": {"check_list_perf.keyword": "Se omitio el diligenciamiento y evaluacion del checklist performance"}},
@@ -57,21 +57,16 @@ def extract_data(url_and_paths):
                 data = response.json()
                 df = pd.json_normalize(data['hits']['hits'])
                 df.rename(columns={'_source.Sprint': 'Sprint',
-                                   '_source.state': 'Estado',
+                                   '_source.Analista_dod': 'Responsable DOD',
                                    '_source.dod': 'DOD',
-                                   '_source.name_pipeline_pdn': 'Pipeline PDN',
                                    '_source.herramienta_despliegue': 'Herramienta Despliegue',
                                    '_source.evidence_item': 'Id Evidencias VSTS',
-                                   '_source.name_pipeline_release_QA': 'Pipeline_Release',
                                    '_source.id_test_plan': 'Testplan',
-                                   '_source.stage_E2E': 'Stage E2E',
-                                   '_source.stage_manual': 'Stage Manual Test',
-                                   '_source.stage_exploratory': 'Stage Exploratory Test',
                                    '_source.existe_matriz': 'Herramienta matriz de riesgos',
                                    '_source.existe_evidence': 'Evidencias',
                                    '_source.check_list_perf': 'Checklist Performance',
                                    '_source.check_list_sec': 'Checklist Seguridad',
-                                   '_source.analista': 'Responsable',
+                                   '_source.analista': 'Responsable Testplan',
                                    '_source.titulo_test_plan': 'Titulo Testplan',
                                    '_source.exite_tag': 'TAG',
                                    '_source.alcance_estrategia': 'Alcance/Estrategia',
@@ -79,11 +74,10 @@ def extract_data(url_and_paths):
                                    '_source.componente_menor': 'Componente Menor',
                                    '_source.lider_componente': 'Lider Inmediato',
                                    }, inplace=True)
-                df = df[['Sprint', 'Herramienta Despliegue', 'Estado', 'DOD', 'Pipeline PDN',
-                         'Pipeline_Release', 'Id Evidencias VSTS', 'Stage E2E', 'Stage Manual Test',
-                         'Stage Exploratory Test', 'Testplan', 'Checklist Performance', 'Checklist Seguridad',
-                         'Titulo Testplan', 'TAG', 'Alcance/Estrategia', 'Herramienta matriz de riesgos',
-                         'Evidencias', 'Responsable', 'Lider Inmediato', 'Fabrica', 'Componente Menor']]
+                df = df[['Sprint', 'Herramienta Despliegue', 'DOD', 'Testplan', 'Checklist Performance',
+                         'Checklist Seguridad', 'Titulo Testplan', 'TAG', 'Alcance/Estrategia',
+                         'Herramienta matriz de riesgos', 'Evidencias', 'Responsable Testplan', 'Responsable DOD',
+                         'Lider Inmediato', 'Fabrica', 'Componente Menor']]
 
                 df.to_excel(ruta_data, index=False)
 
@@ -100,6 +94,7 @@ def extract_data(url_and_paths):
                 columns_to_color = []
 
                 for index, row in df.iterrows():
+                    validate_testplan_in_dod = row['Testplan']
                     checklist_performance_value = row['Checklist Performance']
                     checklist_segue_value = row['Checklist Seguridad']
                     archivo_evidence_value = row['Evidencias']
@@ -108,33 +103,35 @@ def extract_data(url_and_paths):
                     strategy_value = row['Alcance/Estrategia']
                     risk_matrix_value = row['Herramienta matriz de riesgos']
 
-                    check_and_color_column(index, 'L', checklist_performance_value, 'Se omitio el diligenciamiento y evaluacion del checklist performance', columns_to_color)
-                    check_and_color_column(index, 'M', checklist_segue_value, 'Se omitio el diligenciamiento y evaluacion del checklist seguridad', columns_to_color)
-                    check_and_color_column(index, 'N', title_testplan_value, 'Titulo no valido o estandar de nombramiento invalido', columns_to_color)
-                    check_and_color_column(index, 'O', tag_value, 'Tag no Valido o Estandar Invalido', columns_to_color)
-                    check_and_color_column(index, 'P', strategy_value, 'No existe o falta informacion en la descripcion(Alcance, estrategia, supuestos, etc)', columns_to_color)
-                    check_and_color_column(index, 'Q', risk_matrix_value, "No existe archivo 'Herramienta matriz de riesgos.xlsx' o estandar de nombramiento invalido.", columns_to_color)
-                    check_and_color_column(index, 'R', archivo_evidence_value, "No existe archivo 'Evidencias_EVCXXX.pdf' o estandar de nombramiento invalido.", columns_to_color)
+                    check_and_color_column(index, 'D', validate_testplan_in_dod, "No se relaciono el id del testplan o no cumple con estandar de nombramiento 'Evidencias VSTS: 12345'", columns_to_color)
+                    check_and_color_column(index, 'E', checklist_performance_value, 'Se omitio el diligenciamiento y evaluacion del checklist performance', columns_to_color)
+                    check_and_color_column(index, 'F', checklist_segue_value, 'Se omitio el diligenciamiento y evaluacion del checklist seguridad', columns_to_color)
+                    check_and_color_column(index, 'G', title_testplan_value, 'Titulo no valido o estandar de nombramiento invalido', columns_to_color)
+                    check_and_color_column(index, 'H', tag_value, 'Tag no Valido o Estandar Invalido', columns_to_color)
+                    check_and_color_column(index, 'I', strategy_value, 'No existe o falta informacion en la descripcion(Alcance, estrategia, supuestos, etc)', columns_to_color)
+                    check_and_color_column(index, 'J', risk_matrix_value, "No existe archivo 'Herramienta matriz de riesgos.xlsx' o estandar de nombramiento invalido.", columns_to_color)
+                    check_and_color_column(index, 'K', archivo_evidence_value, "No existe archivo 'Evidencias_EVCXXX.pdf' o estandar de nombramiento invalido.", columns_to_color)
 
                 for column in sheet.columns:
                     sheet.column_dimensions[column[0].column_letter].width = 35
 
-                set_column_width(sheet, ['A', 'C', 'D', 'H', 'I', 'J', 'K'], 10)
-                set_column_width(sheet, ['B'], 20)
+                set_column_width(sheet, ['A', 'B', 'C'], 20)
 
-                for row_index, column, column_a, column_b in columns_to_color:
+                for row_index, column, column_a, column_b, column_c in columns_to_color:
                     cell = sheet[column][row_index]
                     cell_a = sheet[column_a][row_index]
                     cell_b = sheet[column_b][row_index]
+                    cell_c = sheet[column_c][row_index]
                     cell.fill = PatternFill(start_color="cd3f3f", end_color="cd3f3f", fill_type="solid")
                     cell.font = Font(color="FFFFFF")
                     cell_a.font = Font(color="A43232")
                     cell_b.font = Font(color="A43232")
+                    cell_c.font = Font(color="A43232")
 
                     border = Border(left=Side(style='thin', color='FFFFFF'),
-                                right=Side(style='thin', color='FFFFFF'),
-                                top=Side(style='thin', color='FFFFFF'),
-                                bottom=Side(style='thin', color='FFFFFF'))
+                                    right=Side(style='thin', color='FFFFFF'),
+                                    top=Side(style='thin', color='FFFFFF'),
+                                    bottom=Side(style='thin', color='FFFFFF'))
 
                     cell.border = border
 
@@ -151,7 +148,6 @@ def extract_data(url_and_paths):
 
 if __name__ == "__main__":
     urls_and_paths_to_extract = [
-        (Constants.url_auto, Constants.ruta_data_auto),
-        (Constants.url_auto_cer, Constants.ruta_data_auto_cer),
+        (Constants.url_manual, Constants.ruta_data_manual)
     ]
     extract_data(urls_and_paths_to_extract)
