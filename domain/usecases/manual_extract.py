@@ -8,7 +8,7 @@ from infraestructure.driven_adapters.automation_metrics_implementation import El
 
 def check_and_color_column(index, column, value, condition, columns_to_color):
     if value == condition:
-        columns_to_color.extend([(index + 1, column, 'A', 'L', 'M')])
+        columns_to_color.extend([(index + 1, column, 'A', 'M', 'N')])
 
 
 def set_column_width(sheet, columns, width):
@@ -23,16 +23,16 @@ def extract_data(url_and_paths):
             "query": {
                 "bool": {
                     "must": [
-                        {"term": {"Sprint.keyword": "Sprint 184"}}
+                        {"term": {"Sprint.keyword": "Sprint 187"}}
                     ],
                     "should": [
                         {"term": {"check_list_perf.keyword": "Se omitio el diligenciamiento y evaluacion del checklist performance"}},
                         {"term": {"check_list_sec.keyword": "Se omitio el diligenciamiento y evaluacion del checklist seguridad"}},
-                        {"term": {"titulo_test_plan.keyword": "Titulo no valido o estandar de nombramiento invalido"}},
-                        {"term": {"exite_tag.keyword": "Tag no Valido o Estandar Invalido"}},
-                        {"term": {"alcance_estrategia.keyword": "No existe o falta informacion en la descripcion(Alcance, estrategia, supuestos, etc)"}},
-                        {"term": {"existe_matriz.keyword": "No existe archivo 'Herramienta matriz de riesgos.xlsx' o estandar de nombramiento invalido."}},
-                        {"term": {"existe_evidence.keyword": "No existe archivo 'Evidencias_EVCXXX.pdf' o estandar de nombramiento invalido."}}
+                        {"term": {"title_test_plan.keyword": "Titulo no valido o estandar de nombramiento invalido"}},
+                        {"term": {"existe_tag_repositorio.keyword": "Tag no Valido o Estandar Invalido"}},
+                        {"term": {"tiene_alcance_estrategia.keyword": "No existe o falta informacion en la descripcion(Alcance, estrategia, supuestos, etc)"}},
+                        {"term": {"matriz_riesgo_test_plan.keyword": "No existe archivo 'Herramienta matriz de riesgos.xlsx' o estandar de nombramiento invalido."}},
+                        {"term": {"evidencias_test_plan.keyword": "No existe archivo 'Evidencias_EVCXXX.pdf' o estandar de nombramiento invalido."}}
                     ],
                     "minimum_should_match": 1
                 }
@@ -57,27 +57,26 @@ def extract_data(url_and_paths):
                 data = response.json()
                 df = pd.json_normalize(data['hits']['hits'])
                 df.rename(columns={'_source.Sprint': 'Sprint',
-                                   '_source.Analista_dod': 'Responsable DOD',
-                                   '_source.dod': 'DOD',
-                                   '_source.herramienta_despliegue': 'Herramienta Despliegue',
-                                   '_source.evidence_item': 'Id Evidencias VSTS',
+                                   '_source.depliegue_automatico': 'Herramienta Despliegue',
+                                   '_source.RegisterId': 'DOD',
+                                   '_source.evidencia': 'Id Evidencias VSTS',
                                    '_source.id_test_plan': 'Testplan',
-                                   '_source.existe_matriz': 'Herramienta matriz de riesgos',
-                                   '_source.existe_evidence': 'Evidencias',
                                    '_source.check_list_perf': 'Checklist Performance',
                                    '_source.check_list_sec': 'Checklist Seguridad',
+                                   '_source.title_test_plan': 'Titulo Testplan',
+                                   '_source.existe_tag_repositorio': 'TAG',
+                                   '_source.tiene_alcance_estrategia': 'Alcance/Estrategia',
+                                   '_source.matriz_riesgo_test_plan': 'Herramienta matriz de riesgos',
+                                   '_source.evidencias_test_plan': 'Evidencias',
                                    '_source.analista': 'Responsable Testplan',
-                                   '_source.titulo_test_plan': 'Titulo Testplan',
-                                   '_source.exite_tag': 'TAG',
-                                   '_source.alcance_estrategia': 'Alcance/Estrategia',
+                                   '_source.Analista_dod': 'Responsable DOD',
+                                   '_source.lider_componente': 'Lider Inmediato',
                                    '_source.fabrica': 'Fabrica',
                                    '_source.componente_menor': 'Componente Menor',
-                                   '_source.lider_componente': 'Lider Inmediato',
                                    }, inplace=True)
-                df = df[['Sprint', 'Herramienta Despliegue', 'DOD', 'Testplan', 'Checklist Performance',
-                         'Checklist Seguridad', 'Titulo Testplan', 'TAG', 'Alcance/Estrategia',
-                         'Herramienta matriz de riesgos', 'Evidencias', 'Responsable Testplan', 'Responsable DOD',
-                         'Lider Inmediato', 'Fabrica', 'Componente Menor']]
+                df = df[['Sprint', 'Herramienta Despliegue', 'DOD', 'Id Evidencias VSTS', 'Testplan', 'Checklist Performance',
+                         'Checklist Seguridad', 'Titulo Testplan', 'TAG', 'Alcance/Estrategia', 'Herramienta matriz de riesgos',
+                         'Evidencias', 'Responsable Testplan', 'Responsable DOD', 'Lider Inmediato', 'Fabrica', 'Componente Menor']]
 
                 df.to_excel(ruta_data, index=False)
 
@@ -103,14 +102,14 @@ def extract_data(url_and_paths):
                     strategy_value = row['Alcance/Estrategia']
                     risk_matrix_value = row['Herramienta matriz de riesgos']
 
-                    check_and_color_column(index, 'D', validate_testplan_in_dod, "No se relaciono el id del testplan o no cumple con estandar de nombramiento 'Evidencias VSTS: 12345'", columns_to_color)
-                    check_and_color_column(index, 'E', checklist_performance_value, 'Se omitio el diligenciamiento y evaluacion del checklist performance', columns_to_color)
-                    check_and_color_column(index, 'F', checklist_segue_value, 'Se omitio el diligenciamiento y evaluacion del checklist seguridad', columns_to_color)
-                    check_and_color_column(index, 'G', title_testplan_value, 'Titulo no valido o estandar de nombramiento invalido', columns_to_color)
-                    check_and_color_column(index, 'H', tag_value, 'Tag no Valido o Estandar Invalido', columns_to_color)
-                    check_and_color_column(index, 'I', strategy_value, 'No existe o falta informacion en la descripcion(Alcance, estrategia, supuestos, etc)', columns_to_color)
-                    check_and_color_column(index, 'J', risk_matrix_value, "No existe archivo 'Herramienta matriz de riesgos.xlsx' o estandar de nombramiento invalido.", columns_to_color)
-                    check_and_color_column(index, 'K', archivo_evidence_value, "No existe archivo 'Evidencias_EVCXXX.pdf' o estandar de nombramiento invalido.", columns_to_color)
+                    check_and_color_column(index, 'E', validate_testplan_in_dod, "No se relaciono el id del testplan o no cumple con estandar de nombramiento 'Evidencias VSTS: 12345'", columns_to_color)
+                    check_and_color_column(index, 'F', checklist_performance_value, 'Se omitio el diligenciamiento y evaluacion del checklist performance', columns_to_color)
+                    check_and_color_column(index, 'G', checklist_segue_value, 'Se omitio el diligenciamiento y evaluacion del checklist seguridad', columns_to_color)
+                    check_and_color_column(index, 'H', title_testplan_value, 'Titulo no valido o estandar de nombramiento invalido', columns_to_color)
+                    check_and_color_column(index, 'I', tag_value, 'Tag no Valido o Estandar Invalido. Ejm: AW0157001_ADMINFO_LFS Release 1', columns_to_color)
+                    check_and_color_column(index, 'J', strategy_value, 'No existe o falta informacion en la descripcion(Alcance, estrategia, supuestos, etc)', columns_to_color)
+                    check_and_color_column(index, 'K', risk_matrix_value, "No existe archivo 'Herramienta matriz de riesgos.xlsx' o estandar de nombramiento invalido.", columns_to_color)
+                    check_and_color_column(index, 'L', archivo_evidence_value, "No existe archivo 'Evidencias_EVCXXX.pdf' o estandar de nombramiento invalido.", columns_to_color)
 
                 for column in sheet.columns:
                     sheet.column_dimensions[column[0].column_letter].width = 35

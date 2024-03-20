@@ -23,7 +23,7 @@ def extract_data(url_and_paths):
             "query": {
                 "bool": {
                     "must": [
-                        {"term": {"Sprint.keyword": "Sprint 185"}}
+                        {"term": {"Sprint.keyword": "Sprint 186"}}
                     ],
                     "should": [
                         {"term": {"check_list_perf.keyword": "Se omitio el diligenciamiento y evaluacion del checklist performance"}},
