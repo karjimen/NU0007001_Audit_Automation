@@ -30,11 +30,8 @@ def extract_data(url_and_paths):
                     ],
                     "should": [
                         {"term": {"check_list_perf.keyword": "Se omitio el diligenciamiento y evaluacion del checklist performance"}},
-                        {"term": {"check_list_perf.keyword": "Se requiere hacer una contextualización con el equipo de Performance para validar el contexto del cambio"}},
-                        {"term": {"check_list_perf.keyword": "Se requiere hacer una contextualización con el equipo de Performance para validar el tipo de cambio"}},
-                        {"term": {"check_list_perf.keyword": "Se requiere hacer una contextualización con el equipo de Performance para validar FOC/ACTG"}},
-                        {"term": {"check_list_perf.keyword": "Se deben realizar pruebas de Performance, será contactado por el equipo de Performance"}},
-                        {"term": {"check_list_sec.keyword": "Se omitio el diligenciamiento y evaluacion del checklist seguridad"}},
+                        {"term": {"check_list_sec.keyword": "Se omitio el diligenciamiento y evaluacion del checklist de seguridad"}},
+                        {"term": {"comment_sec.keyword": "No cumple con el concepto por parte del analista de performance, el cual debía relacionar según el resultado en el checklist."}},
                         {"term": {"title_test_plan.keyword": "Titulo no valido o estandar de nombramiento invalido"}},
                         {"term": {"existe_tag_repositorio.keyword": "Tag no Valido o Estandar Invalido"}},
                         {"term": {"tiene_alcance_estrategia.keyword": "No existe o falta informacion en la descripcion(Alcance, estrategia, supuestos, etc)"}},

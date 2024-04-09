@@ -7,8 +7,8 @@ from infraestructure.driven_adapters.automation_metrics_implementation import El
 
 
 def check_and_color_column(index, column, value, condition, columns_to_color):
-    if value == condition:
-        columns_to_color.extend([(index + 1, column, 'S', 'A')])
+    if condition in value:
+        columns_to_color.extend([(index + 1, column, 'T', 'A')])
 
 
 def set_column_width(sheet, columns, width):
@@ -23,11 +23,14 @@ def extract_data(url_and_paths):
             "query": {
                 "bool": {
                     "must": [
-                        {"term": {"Sprint.keyword": "Sprint 187"}}
+                        {"term": {"Sprint.keyword": "Sprint 188"}}
                     ],
                     "should": [
                         {"term": {"check_list_perf.keyword": "Se omitio el diligenciamiento y evaluacion del checklist performance"}},
                         {"term": {"check_list_sec.keyword": "Se omitio el diligenciamiento y evaluacion del checklist seguridad"}},
+                        {"term": {"check_list_perf.keyword": "Error en descarga"}},
+                        {"term": {"check_list_sec.keyword": "Error en descarga"}},
+                        {"term": {"test_plan_comment.keyword": "No cumple con el concepto por parte del analista de performance, el cual debía relacionar según el resultado en el checklist."}},
                         {"term": {"titulo_test_plan.keyword": "Titulo no valido o estandar de nombramiento invalido"}},
                         {"term": {"exite_tag.keyword": "Tag no Valido o Estandar Invalido"}},
                         {"term": {"alcance_estrategia.keyword": "No existe o falta informacion en la descripcion(Alcance, estrategia, supuestos, etc)"}},
@@ -71,6 +74,7 @@ def extract_data(url_and_paths):
                                    '_source.existe_evidence': 'Evidencias',
                                    '_source.check_list_perf': 'Checklist Performance',
                                    '_source.check_list_sec': 'Checklist Seguridad',
+                                   '_source.test_plan_comment': 'Comentario Analista',
                                    '_source.analista': 'Responsable',
                                    '_source.titulo_test_plan': 'Titulo Testplan',
                                    '_source.exite_tag': 'TAG',
@@ -81,7 +85,7 @@ def extract_data(url_and_paths):
                                    }, inplace=True)
                 df = df[['Sprint', 'Herramienta Despliegue', 'Estado', 'DOD', 'Pipeline PDN',
                          'Pipeline_Release', 'Id Evidencias VSTS', 'Stage E2E', 'Stage Manual Test',
-                         'Stage Exploratory Test', 'Testplan', 'Checklist Performance', 'Checklist Seguridad',
+                         'Stage Exploratory Test', 'Testplan', 'Checklist Performance', 'Checklist Seguridad', 'Comentario Analista',
                          'Titulo Testplan', 'TAG', 'Alcance/Estrategia', 'Herramienta matriz de riesgos',
                          'Evidencias', 'Responsable', 'Lider Inmediato', 'Fabrica', 'Componente Menor']]
 
@@ -102,19 +106,32 @@ def extract_data(url_and_paths):
                 for index, row in df.iterrows():
                     checklist_performance_value = row['Checklist Performance']
                     checklist_segue_value = row['Checklist Seguridad']
-                    archivo_evidence_value = row['Evidencias']
+                    if checklist_segue_value == "Error en descarga":
+                        checklist_segue_value = "Se omitio el diligenciamiento y evaluacion del checklist seguridad"
+                        df.at[index, 'Checklist Seguridad'] = checklist_segue_value
+                    comment_value = row['Comentario Analista']
                     title_testplan_value = row['Titulo Testplan']
                     tag_value = row['TAG']
                     strategy_value = row['Alcance/Estrategia']
                     risk_matrix_value = row['Herramienta matriz de riesgos']
+                    if risk_matrix_value == "":
+                        risk_matrix_value = "No existe archivo 'Herramienta matriz de riesgos.xlsx' o estandar de nombramiento invalido."
+                        df.at[index, 'Herramienta matriz de riesgos'] = risk_matrix_value
+                    archivo_evidence_value = row['Evidencias']
+                    if archivo_evidence_value == "":
+                        archivo_evidence_value = "No existe archivo 'Evidencias_EVCXXX.pdf' o estandar de nombramiento invalido."
+                        df.at[index, 'Evidencias'] = archivo_evidence_value
 
                     check_and_color_column(index, 'L', checklist_performance_value, 'Se omitio el diligenciamiento y evaluacion del checklist performance', columns_to_color)
                     check_and_color_column(index, 'M', checklist_segue_value, 'Se omitio el diligenciamiento y evaluacion del checklist seguridad', columns_to_color)
-                    check_and_color_column(index, 'N', title_testplan_value, 'Titulo no valido o estandar de nombramiento invalido', columns_to_color)
-                    check_and_color_column(index, 'O', tag_value, 'Tag no Valido o Estandar Invalido', columns_to_color)
-                    check_and_color_column(index, 'P', strategy_value, 'No existe o falta informacion en la descripcion(Alcance, estrategia, supuestos, etc)', columns_to_color)
-                    check_and_color_column(index, 'Q', risk_matrix_value, "No existe archivo 'Herramienta matriz de riesgos.xlsx' o estandar de nombramiento invalido.", columns_to_color)
-                    check_and_color_column(index, 'R', archivo_evidence_value, "No existe archivo 'Evidencias_EVCXXX.pdf' o estandar de nombramiento invalido.", columns_to_color)
+                    check_and_color_column(index, 'N', comment_value,'No cumple con el concepto por parte del analista de performance, el cual debía relacionar según el resultado en el checklist.', columns_to_color)
+                    check_and_color_column(index, 'O', title_testplan_value, 'Titulo no valido o estandar de nombramiento invalido', columns_to_color)
+                    check_and_color_column(index, 'P', tag_value, 'Tag no Valido o Estandar Invalido', columns_to_color)
+                    check_and_color_column(index, 'Q', strategy_value, 'No existe o falta informacion en la descripcion(Alcance, estrategia, supuestos, etc)', columns_to_color)
+                    check_and_color_column(index, 'R', risk_matrix_value, "No existe archivo 'Herramienta matriz de riesgos.xlsx' o estandar de nombramiento invalido.", columns_to_color)
+                    check_and_color_column(index, 'S', archivo_evidence_value, "No existe archivo 'Evidencias_EVCXXX.pdf' o estandar de nombramiento invalido.", columns_to_color)
+
+                df.to_excel(workbook, index=False, sheet_name='Sheet1')
 
                 for column in sheet.columns:
                     sheet.column_dimensions[column[0].column_letter].width = 35
