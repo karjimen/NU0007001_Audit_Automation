@@ -106,7 +106,13 @@ def extract_data(url_and_paths):
                     tag_value = row['TAG']
                     strategy_value = row['Alcance/Estrategia']
                     risk_matrix_value = row['Herramienta matriz de riesgos']
+                    if risk_matrix_value == "":
+                        risk_matrix_value = "No existe archivo 'Herramienta matriz de riesgos.xlsx' o estandar de nombramiento invalido."
+                        df.at[index, 'Herramienta matriz de riesgos'] = risk_matrix_value
                     archivo_evidence_value = row['Evidencias']
+                    if archivo_evidence_value == "":
+                        archivo_evidence_value = "No existe archivo 'Evidencias_EVCXXX.pdf' o estandar de nombramiento invalido."
+                        df.at[index, 'Evidencias'] = archivo_evidence_value
 
 
                     check_and_color_column(index, 'E', validate_testplan_in_dod, "No se relaciono el id del testplan o no cumple con estandar de nombramiento 'Evidencias VSTS: 12345'", columns_to_color)
@@ -115,9 +121,12 @@ def extract_data(url_and_paths):
                     check_and_color_column(index, 'H', comment_value, 'No cumple con el concepto por parte del analista de performance, el cual debía relacionar según el resultado en el checklist.', columns_to_color)
                     check_and_color_column(index, 'I', title_testplan_value, 'Titulo no valido o estandar de nombramiento invalido', columns_to_color)
                     check_and_color_column(index, 'J', tag_value, 'Tag no Valido o Estandar Invalido. Ejm: AW0157001_ADMINFO_LFS Release 1', columns_to_color)
+                    check_and_color_column(index, 'J', tag_value,'Tag no Valido o Estandar Invalido', columns_to_color)
                     check_and_color_column(index, 'K', strategy_value, 'No existe o falta informacion en la descripcion(Alcance, estrategia, supuestos, etc)', columns_to_color)
                     check_and_color_column(index, 'L', risk_matrix_value, "No existe archivo 'Herramienta matriz de riesgos.xlsx' o estandar de nombramiento invalido.", columns_to_color)
                     check_and_color_column(index, 'M', archivo_evidence_value, "No existe archivo 'Evidencias_EVCXXX.pdf' o estandar de nombramiento invalido.", columns_to_color)
+
+                df.to_excel(workbook, index=False, sheet_name='Sheet1')
 
                 for column in sheet.columns:
                     sheet.column_dimensions[column[0].column_letter].width = 35
